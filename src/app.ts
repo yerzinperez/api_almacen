@@ -44,6 +44,6 @@ app.use((error: any, req: Request, res: Response, next: NextFunction): void => {
     res.status(500).json({ message: 'Error interno en el servidor. ' + error });
 });
 
-server.listen(PORT, (): void => {
+server.listen(PORT, "0.0.0.0", (): void => {
     console.log(`Servidor escuchando en el puerto ${PORT}`);
 });
