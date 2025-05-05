@@ -21,14 +21,116 @@ initializeDatabase().then(r => console.log('Database connected.'));
 app.use("/sales", salesRoutes);
 app.use("/purchases", purchasesRoutes);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-// Definimos una ruta en nuestro API que realice una solicitud GET a otro servicio
-app.get('/consumir-api', async (req, res) => {
+/**
+ * @swagger
+ * /consumir-g-factura:
+ *   post:
+ *     summary: Consume una API para generar facturas.
+ *     description: Se obtienen datos de la api externa.
+ *     tags:
+ *       - API Externa - Generar factura.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               cliente:
+ *                 type: string
+ *                 example: Juan Perez
+ *               productos:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     cantidad:
+ *                       type: integer
+ *                       example: 1
+ *                     precio:
+ *                       type: integer
+ *                       example: 2500
+ *                     producto_id:
+ *                       type: integer
+ *                       example: 1
+ *
+ *     responses:
+ *       200:
+ *         description: Array de datos.
+ *       500:
+ *         description: Error interno en el servidor.
+ */
+app.post('/consumir-g-factura', async (req, res) => {
     try {
-        const response = await axios.get('https://api.ejemplo.com/datos');
+        const {
+            cliente,
+            productos
+        } = req.body;
+        console.log(productos)
+        const response = await axios.post('http://10.8.8.231:5000/factura/generar', {
+            "cliente": cliente,
+            "productos": productos
+        });
         // Se envía la respuesta obtenida de la otra API
         res.json(response.data);
     } catch (error) {
-        console.error('Error en la petición GET:', error);
+        console.error('Error en la petición POST:', error);
+        res.status(500).json({ error: 'Error al consumir la API externa' });
+    }
+});
+/**
+ * @swagger
+ * /consumir-r-factura:
+ *   post:
+ *     summary: Consume una API para recibir facturas.
+ *     description: Se obtienen datos de la api externa.
+ *     tags:
+ *       - API Externa - Recibir factura.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               cliente:
+ *                 type: string
+ *                 example: Juan Perez
+ *               productos:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     cantidad:
+ *                       type: integer
+ *                       example: 1
+ *                     precio:
+ *                       type: integer
+ *                       example: 2500
+ *                     producto_id:
+ *                       type: integer
+ *                       example: 1
+ *
+ *     responses:
+ *       200:
+ *         description: Array de datos.
+ *       500:
+ *         description: Error interno en el servidor.
+ */
+app.post('/consumir-r-factura', async (req, res) => {
+    try {
+        const {
+            cliente,
+            productos
+        } = req.body;
+        const response = await axios.post('http://10.8.8.231:5000/factura/recibir', {
+            "cliente": cliente,
+            "productos": productos
+        });
+        // Se envía la respuesta obtenida de la otra API
+        res.json(response.data);
+    } catch (error) {
+        console.error('Error en la petición POST:', error);
         res.status(500).json({ error: 'Error al consumir la API externa' });
     }
 });

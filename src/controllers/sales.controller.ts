@@ -51,7 +51,7 @@ export default class SalesController {
      *         content:
      *           application/json:
      *             schema:
-     *               type: array
+     *               type: object
      *               properties:
      *                 id:
      *                   type: integer
@@ -98,7 +98,7 @@ export default class SalesController {
                 valor
             } = req.body;
 
-            if (!nombres || !apellidos || !tipoDocumento || !documento || !valor) {
+            if (!nombres || !apellidos || !tipoDocumento || !documento || isNaN(valor)) {
                 res.status(400).json({ message: "Faltan datos para crear la venta." });
             } else if (valor < 0) {
                 res.status(401).json({ message: "El valor de la venta debe ser positivo." });
