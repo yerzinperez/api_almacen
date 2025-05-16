@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import SalesModel from "../db/models/sales.model";
 import {Model} from "sequelize";
+import axios from "axios";
 
 export default class SalesController {
     /**
@@ -41,10 +42,20 @@ export default class SalesController {
      *                  type: string
      *                  description: Número de documento. Mínimo 8 caracteres y máximo 10.
      *                  required: true
-     *               valor:
-     *                  type: number
-     *                  description: Valor de la venta. Sin signo de moneda y sin puntos ni comas.
-     *                  required: true
+     *               productos:
+     *                 type: array
+     *                 items:
+     *                   type: object
+     *                   properties:
+     *                     cantidad:
+     *                       type: integer
+     *                       example: 1
+     *                     precio:
+     *                       type: integer
+     *                       example: 2500
+     *                     producto_id:
+     *                       type: integer
+     *                       example: 1
      *     responses:
      *       200:
      *         description: Venta creada exitosamente.
@@ -68,9 +79,6 @@ export default class SalesController {
      *                 documento:
      *                   type: string
      *                   example: 1234567890
-     *                 valor:
-     *                   type: number
-     *                   example: 1000
      *                 createdAt:
      *                   type: date
      *                   example: 2025-04-11T01:59:59.672Z
@@ -95,28 +103,31 @@ export default class SalesController {
                 apellidos,
                 tipoDocumento,
                 documento,
-                valor
+                productos
             } = req.body;
 
-            if (!nombres || !apellidos || !tipoDocumento || !documento || isNaN(valor)) {
+            if (!nombres || !apellidos || !tipoDocumento || !documento) {
                 res.status(400).json({ message: "Faltan datos para crear la venta." });
-            } else if (valor < 0) {
-                res.status(401).json({ message: "El valor de la venta debe ser positivo." });
             } else if (documento.length < 8 || documento.length > 10) {
                 res.status(402).json({ message: "El documento debe tener entre 8 y 10 caracteres." });
             } else if (tipoDocumento !== "CC") {
                 res.status(403).json({ message: "El tipo de documento solo puede ser 'CC'." });
             }
 
-            const sale: Model<any, any> = await SalesModel.create({
+            /*const sale: Model<any, any> = await SalesModel.create({
                 nombres,
                 apellidos,
                 tipoDocumento,
                 documento,
-                valor
-            });
+                productos
+            });*/
 
-            res.status(201).json(sale);
+            const response = await axios.post('http://10.8.8.124:5000/factura/generar', {
+                "cliente": nombres + " " + apellidos,
+                "productos": productos
+            });
+            // Se envía la respuesta obtenida de la otra API
+            res.json(response.data);
         } catch (error) {
             console.log(error);
             res.status(500).json({ message: "Hubo un error al crear la venta." });

@@ -10,11 +10,11 @@ const options = {
         },
         servers: [
             {
-                url: 'http://192.168.2.26:3000',
+                url: 'http://10.8.8.123:3000',
             },
         ],
     },
-    apis: ['./src/controllers/*.ts'],
+    apis: ['./src/controllers/*.ts', './src/app.ts'],
 }
 
 const swaggerSpec = swaggerJSDoc(options);

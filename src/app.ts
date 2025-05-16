@@ -67,7 +67,7 @@ app.post('/consumir-g-factura', async (req, res) => {
             productos
         } = req.body;
         console.log(productos)
-        const response = await axios.post('http://10.8.8.231:5000/factura/generar', {
+        const response = await axios.post('http://10.8.8.124:5000/factura/generar', {
             "cliente": cliente,
             "productos": productos
         });
@@ -123,7 +123,7 @@ app.post('/consumir-r-factura', async (req, res) => {
             cliente,
             productos
         } = req.body;
-        const response = await axios.post('http://10.8.8.231:5000/factura/recibir', {
+        const response = await axios.post('http://10.8.8.124:5000/factura/recibir', {
             "cliente": cliente,
             "productos": productos
         });

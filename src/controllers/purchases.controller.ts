@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import PurchasesModel from "../db/models/purchases.model";
 import {Model} from "sequelize";
+import axios from "axios";
 
 export default class PurchasesController {
     /**
@@ -31,10 +32,20 @@ export default class PurchasesController {
      *                 type: string
      *                 description: Apellido o apellidos del usuario.
      *                 required: true
-     *               valor:
-     *                  type: number
-     *                  description: Valor de la compra. Sin signo de moneda y sin puntos ni comas.
-     *                  required: true
+     *               productos:
+     *                 type: array
+     *                 items:
+     *                   type: object
+     *                   properties:
+     *                     cantidad:
+     *                       type: integer
+     *                       example: 1
+     *                     precio:
+     *                       type: integer
+     *                       example: 2500
+     *                     producto_id:
+     *                       type: integer
+     *                       example: 1
      *     responses:
      *       201:
      *         description: Compra creada exitosamente.
@@ -71,16 +82,21 @@ export default class PurchasesController {
             const {
                 nombres,
                 apellidos,
-                valor
+                productos
             } = req.body;
 
-            const purchase: Model<any, any> = await PurchasesModel.create({
+            /*const purchase: Model<any, any> = await PurchasesModel.create({
                 nombres,
                 apellidos,
                 valor
+            });*/
+
+            const response = await axios.post('http://10.8.8.124:5000/factura/recibir', {
+                "cliente": nombres + " " + apellidos,
+                "productos": productos
             });
 
-            res.status(201).json(purchase);
+            res.status(201).json(response.data);
         } catch (error) {
             console.log(error);
             res.status(500).json({ message: "Hubo un error al crear la compra." });

@@ -6,7 +6,8 @@ const SalesModel = sequelize.define('tbl_sales', {
     apellidos: { type: DataTypes.STRING, allowNull: false },
     tipoDocumento: { type: DataTypes.STRING, allowNull: false, field: 'tipo_documento' },
     documento: { type: DataTypes.STRING, allowNull: false },
-    valor: { type: DataTypes.REAL, allowNull: false },
+    cantidad: { type: DataTypes.REAL, allowNull: false },
+    precio: { type: DataTypes.REAL, allowNull: false },
 });
 
 export default SalesModel;
