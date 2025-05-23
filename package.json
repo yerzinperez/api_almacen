@@ -2,9 +2,15 @@
   "name": "api_almacen_nodejs",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "start": "node ./dist/app.js",
+    "start-inventory": "node ./dist/inventory.js",
+    "start-sales": "node ./dist/sales.js",
+    "start-accounting": "node ./dist/accounting.js",
+    "start-proveedor": "node ./dist/proveedor.js",
+    "start-transport": "node ./dist/transport.js",
+    "start-logger": "node ./dist/logger.js",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

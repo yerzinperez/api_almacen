@@ -1,4 +1,6 @@
 import sequelize from '../config/database';
+import InventoryModel from './models/inventory.model';
+import SalesModel from './models/sales.model';
 
 export default async function initializeDatabase() {
     try {

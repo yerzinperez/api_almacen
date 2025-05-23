@@ -6,7 +6,7 @@ import axios from "axios";
 export default class SalesController {
     /**
      * @swagger
-     * /sales:
+     * /sales/registrarVenta:
      *   post:
      *     summary: Crea una nueva venta
      *     description: Crea una nueva venta en la base de datos con la información enviada.
@@ -24,7 +24,7 @@ export default class SalesController {
      *               - apellidos
      *               - tipoDocumento
      *               - documento
-     *               - valor
+     *               - productos
      *             properties:
      *               nombres:
      *                 type: string
@@ -59,40 +59,8 @@ export default class SalesController {
      *     responses:
      *       200:
      *         description: Venta creada exitosamente.
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 id:
-     *                   type: integer
-     *                   example: 1
-     *                 nombres:
-     *                   type: string
-     *                   example: Pepito
-     *                 apellidos:
-     *                   type: string
-     *                   example: Pérez
-     *                 tipoDocumento:
-     *                   type: string
-     *                   example: CC
-     *                 documento:
-     *                   type: string
-     *                   example: 1234567890
-     *                 createdAt:
-     *                   type: date
-     *                   example: 2025-04-11T01:59:59.672Z
-     *                 updatedAt:
-     *                   type: date
-     *                   example: 2025-04-11T01:59:59.672Z
      *       400:
-     *         description: Faltan datos para crear la venta.
-     *       401:
-     *         description: El valor de la venta debe ser positivo.
-     *       402:
-     *         description: El documento debe tener entre 8 y 10 caracteres.
-     *       403:
-     *         description: El tipo de documento solo puede ser 'CC'.
+     *         description: Faltan datos para crear la venta. Por favor revise los parámetros ingresados.
      *       500:
      *         description: Error interno en el servidor.
      */
@@ -106,37 +74,65 @@ export default class SalesController {
                 productos
             } = req.body;
 
-            if (!nombres || !apellidos || !tipoDocumento || !documento) {
-                res.status(400).json({ message: "Faltan datos para crear la venta." });
-            } else if (documento.length < 8 || documento.length > 10) {
-                res.status(402).json({ message: "El documento debe tener entre 8 y 10 caracteres." });
-            } else if (tipoDocumento !== "CC") {
-                res.status(403).json({ message: "El tipo de documento solo puede ser 'CC'." });
+            await axios.post('http://192.168.0.8:3000/logger/log',{
+                    message:
+                        `Se llama al modulo de contabilidad.`,
+                }, {validateStatus: () => true}
+            );
+
+            const response: any = await axios.post('http://192.168.0.5:3000/accounting/generarFactura', {
+                "nombres": nombres,
+                "apellidos": apellidos,
+                "tipoDocumento": tipoDocumento,
+                "documento": documento,
+                "productos": productos
+            } , {
+                validateStatus: () => true
+            });
+
+            if ((response.data.message).includes('Factura generada exitosamente.')) {
+                await axios.post('http://192.168.0.8:3000/logger/log',{
+                        message:
+                            `Se crea la venta.`,
+                    }, {validateStatus: () => true}
+                );
+                for (const item of productos) {
+                    await SalesModel.create({
+                        nombres,
+                        apellidos,
+                        tipoDocumento,
+                        documento,
+                        producto: item.id_producto,
+                        cantidad: item.cantidad,
+                        precio: parseInt(item.cantidad) * parseInt(item.precio)
+                    })
+                }
+
+                await axios.post('http://192.168.0.8:3000/logger/log',{
+                        message:
+                            `Se envía la respuesta al cliente.`,
+                    }, {validateStatus: () => true}
+                );
+                // Se envía la respuesta obtenida de la otra API
+                res.status(200).json({message: `Venta creada exitosamente. ${response.data.message}`});
+            } else {
+                await axios.post('http://192.168.0.8:3000/logger/log',{
+                        message:
+                            'No se pudo crear la venta: ' + response.data.message,
+                    }, {validateStatus: () => true}
+                );
+                res.status(400).json({message: 'No se pudo crear la venta: ' + response.data.message});
             }
 
-            /*const sale: Model<any, any> = await SalesModel.create({
-                nombres,
-                apellidos,
-                tipoDocumento,
-                documento,
-                productos
-            });*/
-
-            const response = await axios.post('http://10.8.8.124:5000/factura/generar', {
-                "cliente": nombres + " " + apellidos,
-                "productos": productos
-            });
-            // Se envía la respuesta obtenida de la otra API
-            res.json(response.data);
         } catch (error) {
             console.log(error);
-            res.status(500).json({ message: "Hubo un error al crear la venta." });
+            res.status(500).json({ message: "Hubo un error interno en el servidor. " + error });
         }
     }
 
     /**
      * @swagger
-     * /sales:
+     * /sales/obtenerVentas:
      *   get:
      *     summary: Obtiene todas las ventas
      *     description: Se obtienen todas las ventas en formato JSON.
@@ -165,7 +161,13 @@ export default class SalesController {
      *                 documento:
      *                   type: string
      *                   example: 1234567890
-     *                 valor:
+     *                 id_producto:
+     *                   type: integer
+     *                   example: 1
+     *                 cantidad:
+     *                   type: integer
+     *                   example: 10
+     *                 precio:
      *                   type: number
      *                   example: 1000
      *                 createdAt:

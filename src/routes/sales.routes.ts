@@ -5,7 +5,7 @@ const router: Router = express.Router();
 const salesController = new SalesController();
 
 // Rutas de ventas
-router.post("/", salesController.create);
-router.get("/", salesController.findAll);
+router.post("/registrarVenta", salesController.create);
+router.get("/obtenerVentas", salesController.findAll);
 
 export default router;

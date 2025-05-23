@@ -1,0 +1,85 @@
+services:
+  middleware:
+    build:
+      context: .  # Directorio donde se encuentra el Dockerfile
+      dockerfile: dockerfile  # Nombre del archivo Dockerfile (opcional si se llama Dockerfile)
+    image: api_almacen_nodejs  # Nombre y etiqueta de la imagen
+    container_name: Middleware
+    ports:
+      - "5000:3000"
+    networks:
+      netapi:
+        ipv4_address: 192.168.0.2
+    volumes:
+      - ./dbs:/opt/api_almacen_nodejs/dbs
+    environment:
+      - DATABASE_URL=/opt/api_almacen_nodejs/dbs/identifier.sqlite
+    command: npm start  # Comando para ejecutar
+
+  inventario:
+    image: api_almacen_nodejs  # Nombre y etiqueta de la imagen
+    container_name: Inventario
+    ports:
+      - "5001:3000"
+    networks:
+      netapi:
+        ipv4_address: 192.168.0.3
+    volumes:
+      - ./dbs:/opt/api_almacen_nodejs/dbs
+    environment:
+      - DATABASE_URL=/opt/api_almacen_nodejs/dbs/identifier.sqlite
+    command: npm run start-inventory  # Comando para ejecutar
+
+  ventas:
+    image: api_almacen_nodejs  # Nombre y etiqueta de la imagen
+    container_name: Ventas
+    networks:
+      netapi:
+        ipv4_address: 192.168.0.4
+    volumes:
+      - ./dbs:/opt/api_almacen_nodejs/dbs
+    environment:
+      - DATABASE_URL=/opt/api_almacen_nodejs/dbs/identifier.sqlite
+    command: npm run start-sales  # Comando para ejecutar
+  contabilidad:
+    image: api_almacen_nodejs  # Nombre y etiqueta de la imagen
+    container_name: Contabilidad
+    networks:
+      netapi:
+        ipv4_address: 192.168.0.5
+    volumes:
+      - ./dbs:/opt/api_almacen_nodejs/dbs
+    environment:
+      - DATABASE_URL=/opt/api_almacen_nodejs/dbs/identifier.sqlite
+    command: npm run start-accounting  # Comando para ejecutar
+  proveedor:
+    image: api_almacen_nodejs  # Nombre y etiqueta de la imagen
+    container_name: Proveedor
+    ports:
+      - "5002:3000"
+    networks:
+      netapi:
+        ipv4_address: 192.168.0.6
+    command: npm run start-proveedor  # Comando para ejecutar
+  transporte:
+    image: api_almacen_nodejs  # Nombre y etiqueta de la imagen
+    container_name: Transporte
+    networks:
+      netapi:
+        ipv4_address: 192.168.0.7
+    command: npm run start-transport  # Comando para ejecutar
+  logger:
+    image: api_almacen_nodejs  # Nombre y etiqueta de la imagen
+    container_name: Logger
+    networks:
+      netapi:
+        ipv4_address: 192.168.0.8
+    command: npm run start-logger  # Comando para ejecutar
+    
+networks:
+  netapi:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 192.168.0.0/16
+         gateway: 192.168.0.1

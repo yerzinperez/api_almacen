@@ -5,15 +5,20 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import configureApp from './config';
-import shopRoutes from "./routes/shop.routes";
-import swaggerSpec from "./config/swagger";
+import initializeDatabase from "./db";
+import salesRoutes from "./routes/sales.routes";
+import swaggerSpec from "./config/swagger-sales";
+
 const app: Express = configureApp();
 const PORT: string | 3000 = process.env.PORT ?? 3000;
 const server: any = createServer(app);
 
+initializeDatabase().then(r => console.log('Database connected.'));
+
 // Rutas de Express
-app.use("/shop", shopRoutes);
+app.use("/sales", salesRoutes);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 app.get('/', (req: Request, res: Response): void => {
     res.redirect('/docs');
 })
@@ -27,5 +32,5 @@ app.use((error: any, req: Request, res: Response, next: NextFunction): void => {
 });
 
 server.listen(PORT, (): void => {
-    console.log(`Tienda escuchando en el puerto ${PORT}`);
+    console.log(`Ventas escuchando en el puerto ${PORT}`);
 });
